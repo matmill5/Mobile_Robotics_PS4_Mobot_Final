@@ -30,7 +30,7 @@ int main(int argc, char **argv) {
     ros::init(argc, argv, "modal_trajectory_controller"); //name this node
     ros::NodeHandle nh; 
 
-    twist_pub = nh.advertise<geometry_msgs::Twist>("lidar_alarm", 1);
+    twist_pub = nh.advertise<geometry_msgs::Twist>("cmd_vel", 1);
     
     des_state_sub = nh.subscribe("/desired_state", 1, desStateCallback);
     cur_state_sub = nh.subscribe("/current_state", 1, curStateCallback);

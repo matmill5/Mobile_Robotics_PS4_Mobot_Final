@@ -31,7 +31,7 @@ bool desStateServiceCallBack(mobot_controller::ServiceMsgRequest& request, mobot
     g_start_pose = request.start_pos;
     g_end_pose = request.goal_pos;
     
-    double dt = 0.01;
+    double dt = 1;
     ros::Rate looprate(1/dt);    
     TrajBuilder trajBuilder;
     trajBuilder.set_dt(dt);
