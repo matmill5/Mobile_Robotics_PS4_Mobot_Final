@@ -1,0 +1,5 @@
+geometry_msgs/PoseStamped start_pos
+geometry_msgs/PoseStamped goal_pos
+string mode
+---
+bool success

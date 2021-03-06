@@ -1,0 +1,2 @@
+#### Trouble
+- For `lidar_alarm_mobot` node, there was a bug in the mobot lidar sensor that can not perform the math correctly (without the additional loop to reassign the value of limit from 0 to 89, the value changing weirdly depending on the lidar distance even though no related variable was used in the calculation). We solve it by assing the other half and copy it to the other side.
