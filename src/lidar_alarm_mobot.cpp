@@ -126,7 +126,7 @@ int main(int argc, char **argv) {
     ros::init(argc, argv, "lidar_alarm_mobot"); //name this node
     ros::NodeHandle nh; 
 
-    ros::Publisher pub = nh.advertise<std_msgs::Bool>("lidar_alarm", 1);
+    ros::Publisher pub = nh.advertise<std_msgs::Bool>("/lidar_alarm", 1);
     lidar_alarm_pub = pub;
     
     ros::Subscriber lidar_subscriber = nh.subscribe("/scan", 1, laserCallback);

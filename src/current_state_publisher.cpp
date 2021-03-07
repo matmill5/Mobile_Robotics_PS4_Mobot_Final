@@ -10,6 +10,9 @@ nav_msgs::Odometry odom;
 void odomCallback (const nav_msgs::Odometry& odomReceived) {
     odom = odomReceived;
     current_state_publisher.publish(odom);
+    ROS_INFO("Position-> x: [%f], y: [%f], z: [%f]", odom.pose.pose.position.x,odom.pose.pose.position.y, odom.pose.pose.position.z);
+	ROS_INFO("Orientation-> x: [%f], y: [%f], z: [%f], w: [%f]", odom.pose.pose.orientation.x, odom.pose.pose.orientation.y, odom.pose.pose.orientation.z, odom.pose.pose.orientation.w);
+	ROS_INFO("Vel-> Linear: [%f], Angular: [%f]", odom.twist.twist.linear.x,odom.twist.twist.angular.z);
 }
 
 int main(int argc, char **argv) {

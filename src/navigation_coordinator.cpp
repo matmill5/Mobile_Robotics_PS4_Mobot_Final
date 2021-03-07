@@ -36,7 +36,7 @@ int main(int argc, char **argv) {
 
     ros::ServiceClient client = n.serviceClient<mobot_controller::ServiceMsg>("des_state_publisher_service");
     
-    ros::Subscriber current_state_sub = n.subscribe("current_state", 1, currStateCallback);
+    ros::Subscriber current_state_sub = n.subscribe("/current_state", 1, currStateCallback);
 
     mobot_controller::ServiceMsg srv;
     geometry_msgs::PoseStamped start_pose;

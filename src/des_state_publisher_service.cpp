@@ -27,7 +27,7 @@ using namespace std;
 
 bool desStateServiceCallBack(mobot_controller::ServiceMsgRequest& request, mobot_controller::ServiceMsgResponse& response){
     bool success;
-    string mode = request.mode;
+    int mode = stoi(request.mode);
     g_start_pose = request.start_pos;
     g_end_pose = request.goal_pos;
     
@@ -43,7 +43,8 @@ bool desStateServiceCallBack(mobot_controller::ServiceMsgRequest& request, mobot
     std::vector<nav_msgs::Odometry> vec_of_states;
     
     
-    if (mode.compare("forward")) {
+    // Forward mode - 1
+    if (mode == 1) {
         trajBuilder.build_travel_traj(g_start_pose, g_end_pose, vec_of_states);
         for (auto state:vec_of_states) {
             des_state = state;
@@ -51,10 +52,12 @@ bool desStateServiceCallBack(mobot_controller::ServiceMsgRequest& request, mobot
             des_state_pub.publish(des_state);
             looprate.sleep();
             ros::spinOnce();
-            if (lidar_alarm)    return response.success = false;                
+            if (lidar_alarm)
+                return response.success = false;                
         }
     }
-    else if (mode.compare("spin")) {
+    //Spin mode - 2
+    if (mode == 2) {
         trajBuilder.build_spin_traj(g_start_pose, g_end_pose, vec_of_states);
         for (auto state:vec_of_states) {
             des_state = state;
@@ -62,10 +65,11 @@ bool desStateServiceCallBack(mobot_controller::ServiceMsgRequest& request, mobot
             des_state_pub.publish(des_state);
             looprate.sleep();
             ros::spinOnce();
-            if (lidar_alarm)    return response.success = false;    
+            if (lidar_alarm)
+                return response.success = false;    
         }
     }
-    else if(mode.compare("halt")){
+    if(mode = 3){
         trajBuilder.build_braking_traj(g_start_pose, vec_of_states);
         for (auto state:vec_of_states) {
             des_state = state;
@@ -73,10 +77,11 @@ bool desStateServiceCallBack(mobot_controller::ServiceMsgRequest& request, mobot
             des_state_pub.publish(des_state);
             looprate.sleep();
             ros::spinOnce();
-            if (lidar_alarm)    return response.success = false;    
+            if (lidar_alarm)
+                return response.success = false;    
         }
     }
-    else{
+    else {
         ROS_ERROR("Eh!!!!!!!");
         return response.success = false;    
     }
