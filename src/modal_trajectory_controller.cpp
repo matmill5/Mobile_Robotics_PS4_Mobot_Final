@@ -14,27 +14,31 @@ geometry_msgs::Twist cur_twist;
 geometry_msgs::Twist des_twist;
 
 // This just to update the current state with its twist
-void curStateCallback(const nav_msgs::Odometry& cur_state_recv) {
+void curStateCallback(const nav_msgs::Odometry &cur_state_recv)
+{
     cur_state = cur_state_recv;
 }
 
-void desStateCallback(const nav_msgs::Odometry& des_state_recv){
+void desStateCallback(const nav_msgs::Odometry &des_state_recv)
+{
     des_state = des_state_recv;
     des_twist = des_state.twist.twist;
+    des_twist.angular.z = -des_twist.angular.z; // bug in ang_vel
     //! add logic here to distinguise either spin-in-place, straight-line-motion, or halt
     //! after logic, lane-drift control!!!!
     twist_pub.publish(des_twist);
 }
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
     ros::init(argc, argv, "modal_trajectory_controller"); //name this node
-    ros::NodeHandle nh; 
+    ros::NodeHandle nh;
 
     twist_pub = nh.advertise<geometry_msgs::Twist>("/cmd_vel", 1);
-    
+
     des_state_sub = nh.subscribe("/desired_state", 1, desStateCallback);
     cur_state_sub = nh.subscribe("/current_state", 1, curStateCallback);
 
-    ros::spin();    
-    return 0; 
+    ros::spin();
+    return 0;
 }
