@@ -30,7 +30,7 @@ ros::Subscriber lidar_sub;
 bool desStateServiceCallBack(mobot_controller::ServiceMsgRequest &request,
                              mobot_controller::ServiceMsgResponse &response)
 {
-    bool success = true;
+    bool success = false;
 
     // convert mode from string to int:
     // 0 - init (maybe don't need this?)
@@ -47,8 +47,10 @@ bool desStateServiceCallBack(mobot_controller::ServiceMsgRequest &request,
     ros::Rate looprate(1 / dt);
     TrajBuilder trajBuilder;
     trajBuilder.set_dt(dt);
-    // trajBuilder.set_alpha_max(1.0);
-    // trajBuilder.set_accel_max(1.0);
+    trajBuilder.set_alpha_max(0.1);
+    trajBuilder.set_accel_max(0.03);
+    trajBuilder.set_omega_max(0.1*10);
+    trajBuilder.set_speed_max(0.03*20);
 
     // calculate the desired state stream using traj_builder lib.
     nav_msgs::Odometry des_state;
@@ -57,19 +59,6 @@ bool desStateServiceCallBack(mobot_controller::ServiceMsgRequest &request,
 
     switch (s)
     {
-    // case 0:
-    //     trajBuilder.build_point_and_go_traj(g_start_pose, g_end_pose, vec_of_states);
-    //     for (auto state : vec_of_states)
-    //     {
-    //         des_state = state;
-    //         des_state.header.stamp = ros::Time::now();
-    //         des_state_pub.publish(des_state);
-    //         looprate.sleep();
-    //         ros::spinOnce();
-    //         if (lidar_alarm)
-    //             response.success = false;
-    //     }
-    //     break;
 
     // GOING FORWARD
     case 1:
@@ -81,11 +70,14 @@ bool desStateServiceCallBack(mobot_controller::ServiceMsgRequest &request,
             des_state_pub.publish(des_state);
             looprate.sleep();
             ros::spinOnce();
-            if (lidar_alarm){
-                s = 3;
+            if (lidar_alarm)
+            {
                 response.success = false;
+                ROS_INFO("cannot move, obstalce");
                 break;
             }
+            else
+                response.success = true;
         }
         break;
 
@@ -99,11 +91,7 @@ bool desStateServiceCallBack(mobot_controller::ServiceMsgRequest &request,
             des_state_pub.publish(des_state);
             looprate.sleep();
             ros::spinOnce();
-            if (lidar_alarm){
-                s = 3;
-                response.success = false;
-                break;
-            }
+            response.success = true;
         }
         break;
 
