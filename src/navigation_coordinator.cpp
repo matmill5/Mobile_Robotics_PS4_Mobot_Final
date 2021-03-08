@@ -23,8 +23,9 @@ void currStateCallback(const nav_msgs::Odometry &odom)
     current_pose.pose = current_state.pose.pose;
 }
 
-void move2coord(float goal_pose_x, float goal_pose_y)
+bool move2coord(float goal_pose_x, float goal_pose_y)
 {
+    bool success = true;
     TrajBuilder trajBuilder;
     mobot_controller::ServiceMsg srv;
     geometry_msgs::PoseStamped start_pose;
@@ -86,8 +87,22 @@ void move2coord(float goal_pose_x, float goal_pose_y)
         srv.request.goal_pos = current_pose; //anything is fine.
         srv.request.mode = "3";              // spin so that head toward the goal.
         client.call(srv);
+        success = false;
     }
     ros::spinOnce();
+
+    return success;
+}
+
+void tryMove(float goal_pose_x, float goal_pose_y, int retry_max)
+{
+    int retry_ctr = 0;
+    bool success = move2coord(goal_pose_x, goal_pose_y);
+    while (!success && retry_ctr < retry_max) {
+        ROS_WARN("RETRY %d", retry_ctr);
+        retry_ctr++;
+        success = move2coord(goal_pose_x,goal_pose_y);
+    }
 }
 
 int main(int argc, char **argv)
@@ -104,19 +119,19 @@ int main(int argc, char **argv)
     TrajBuilder trajBuilder;
 
     ROS_INFO("STEP 1");
-    move2coord(10, 0);
+    tryMove(10, 0, 1);
 
     ROS_INFO("STEP 2");
-    move2coord(current_pose.pose.position.x - 0.05, 10);
+    tryMove(current_pose.pose.position.x - 0.05, 10, 1);
 
     ROS_INFO("STEP 3");
-    move2coord(0.5, current_pose.pose.position.y - 0.05);
+    tryMove(0.5, current_pose.pose.position.y - 0.05, 1);
 
     ROS_INFO("STEP 4");
-    move2coord(0.5, 10);
+    tryMove(0.5, 10, 1);
 
     ROS_INFO("STEP 5");
-    move2coord(-8, current_pose.pose.position.y - 0.05);
+    tryMove(-8, current_pose.pose.position.y - 0.05, 1);
 
     ros::spin();
 
