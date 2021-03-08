@@ -1,6 +1,6 @@
-# Mobile Robotics - PS4 - Mobot Path Execution
+## Mobile Robotics - PS4 - Mobot Path Execution
 
-# Content - ROS Nodes
+#### Content - ROS Nodes
 current_state_publisher
 des_state_publisher_service
 lidar_alarm_mobot
@@ -8,7 +8,7 @@ modal_trajectory_controller
 navigation_coordinator
 traj_builder
 
-# Usage
+#### Usage
 roslaunch mobot_urdf mobot_in_pen.launch
 rosrun mobot_controller current_state_publisher
 rosrun mobot_controller lidar_alarm_mobot
