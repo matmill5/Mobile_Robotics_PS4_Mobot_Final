@@ -57,6 +57,8 @@ void move2coord(float goal_pose_x, float goal_pose_y)
 
     double des_psi = atan2(dy, dx);
 
+    int retry_fwd_count = 0;
+    int retry_rot_count = 0;
     // rotate
     while (fabs(trajBuilder.convertPlanarQuat2Psi(current_state.pose.pose.orientation) - des_psi) >= M_PI / 18)
     {
@@ -68,6 +70,16 @@ void move2coord(float goal_pose_x, float goal_pose_y)
         srv.request.mode = "2"; // spin so that head toward the goal.
         client.call(srv);
         ros::spinOnce();
+        
+        //pause briefly and resend request - if request outcome is failure
+        if(!srv.response.success){
+            srv.request.start_pos = current_pose; //update current pos
+            srv.request.goal_pos = goal_pose_rot;
+            srv.request.mode = "2"; // spin so that head toward the goal.
+            client.call(srv);
+            ros::spinOnce();
+            retry_rot_count=+1;
+        }
     }
 
     // forward
@@ -84,10 +96,27 @@ void move2coord(float goal_pose_x, float goal_pose_y)
     if (!srv.response.success)
     {
         srv.request.start_pos = current_pose;
-        srv.request.goal_pos = current_pose; //anything is fine.
-        srv.request.mode = "3";              // spin so that head toward the goal.
+        srv.request.goal_pos = goal_pose_rot; //anything is fine.
+        srv.request.mode = "3";              // spin so that head toward the goal. (mode 3 is halt)
         client.call(srv);
         ROS_INFO("cannot move, obstacle. braking");
+    }
+
+    //pause briefly and resend request - if request outcome is failure
+    //retry forward - in case of robot being blocked
+    //retry three times
+    if(!srv.response.success & retry_fwd_count < 3){
+        srv.request.start_pos = current_pose; //update current pos
+        srv.request.goal_pos = goal_pose_trans;
+        srv.request.mode = "1"; // forward toward the goal.
+        client.call(srv);
+        ros::spinOnce();
+        retry_fwd_count=+1;
+    }
+
+    if(srv.response.success){
+        retry_fwd_count = 0;
+        retry_rot_count = 0;
     }
 }
 
@@ -108,17 +137,21 @@ int main(int argc, char **argv)
     move2coord(10,0);
 
     ROS_INFO("STEP 2");
-    move2coord(current_pose.pose.position.x - 0.05, 10);
+    move2coord(current_pose.pose.position.x - 0.5, 9);
 
     ROS_INFO("STEP 3");
-    move2coord(0, current_pose.pose.position.y - 0.05);
+    move2coord(0, 4.2);
 
     ROS_INFO("STEP 4");
-    move2coord(0, 7.5);
+    move2coord(0, 6);
 
-    ROS_INFO("STEP 5");
-    move2coord(-8, 7.5);
+    ROS_INFO("STEP 6");
+    move2coord(-8, 6);
+
+    ROS_INFO("STEP 7");
+    move2coord(-8, 0);
     
+    ROS_INFO("Done");
     ros::spin();
 
     return 0;

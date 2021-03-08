@@ -26,7 +26,7 @@ int main(int argc, char **argv) {
     twist.angular.z = w_z;
     while (ros::ok()){
         cmd_vel_test.publish(twist);    
-    ros::spinOnce();
+        ros::spinOnce();
     }
     return 0;
 }
