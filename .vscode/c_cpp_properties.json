@@ -1,0 +1,52 @@
+{
+  "configurations": [
+    {
+      "browse": {
+        "databaseFilename": "",
+        "limitSymbolsToIncludedHeaders": true
+      },
+      "includePath": [
+        "/home/administrator/delta_ws/devel/include/**",
+        "/home/administrator/ros_ws/devel/include/**",
+        "/opt/ros/noetic/include/**",
+        "/home/administrator/ros_ws/src/learning_ros_noetic/Part_5/arm7dof/arm7dof_fk_ik/include/**",
+        "/home/administrator/ros_ws/src/learning_ros_noetic/Part_5/arm7dof/arm7dof_traj_as/include/**",
+        "/home/administrator/ros_ws/src/learning_ros_noetic/Part_5/arm_motion_interface/include/**",
+        "/home/administrator/ros_ws/src/learning_ros_noetic/Part_5/baxter/baxter_fk_ik/include/**",
+        "/home/administrator/ros_ws/src/learning_ros_noetic/Part_5/baxter/baxter_trajectory_streamer/include/**",
+        "/home/administrator/ros_ws/src/learning_ros_noetic/Part_5/cartesian_motion_commander/include/**",
+        "/home/administrator/ros_ws/src/learning_ros_noetic/Part_5/cartesian_planner/include/**",
+        "/home/administrator/ros_ws/src/learning_ros_noetic/Part_1/creating_a_ros_library/include/**",
+        "/home/administrator/ros_ws/src/learning_ros_noetic/Part_4/example_nav_plugin/include/**",
+        "/home/administrator/ros_ws/src/learning_ros_noetic/Part_5/fk_ik_virtual/include/**",
+        "/home/administrator/ros_ws/src/learning_ros_external_pkgs_noetic/gazebo_ros_pkgs/gazebo_plugins/include/**",
+        "/home/administrator/ros_ws/src/learning_ros_external_pkgs_noetic/gazebo_ros_pkgs/gazebo_ros/include/**",
+        "/home/administrator/ros_ws/src/learning_ros_external_pkgs_noetic/gazebo_ros_pkgs/gazebo_ros_control/include/**",
+        "/home/administrator/ros_ws/src/learning_ros_noetic/Part_5/generic_cartesian_planner/include/**",
+        "/home/administrator/ros_ws/src/learning_ros_noetic/Part_5/irb120/irb120_fk_ik/include/**",
+        "/home/administrator/ros_ws/src/learning_ros_noetic/Part_5/irb140/irb140_fk_ik/include/**",
+        "/home/administrator/ros_ws/src/learning_ros_noetic/Part_5/joint_space_planner/include/**",
+        "/home/administrator/delta_ws/src/Mobile_Robotics_PS4_Mobot_Final/include/**",
+        "/home/administrator/ros_ws/src/learning_ros_noetic/Part_5/object_grabber/include/**",
+        "/home/administrator/ros_ws/src/learning_ros_noetic/Part_3/object_manipulation_properties/include/**",
+        "/home/administrator/ros_ws/src/learning_ros_noetic/Part_4/odom_tf/include/**",
+        "/home/administrator/ros_ws/src/learning_ros_noetic/Part_3/pcl_utils/include/**",
+        "/home/administrator/ros_ws/src/roboteq_motor_controller_driver/include/**",
+        "/home/administrator/ros_ws/src/learning_ros_noetic/Part_5/rrbot/include/**",
+        "/home/administrator/ros_ws/src/learning_ros_noetic/Part_5/baxter/simple_baxter_gripper_interface/include/**",
+        "/home/administrator/ros_ws/src/stdr_simulator/stdr_gui/include/**",
+        "/home/administrator/ros_ws/src/stdr_simulator/stdr_parser/include/**",
+        "/home/administrator/ros_ws/src/stdr_simulator/stdr_robot/include/**",
+        "/home/administrator/ros_ws/src/stdr_simulator/stdr_samples/include/**",
+        "/home/administrator/ros_ws/src/stdr_simulator/stdr_server/include/**",
+        "/home/administrator/ros_ws/src/learning_ros_noetic/Part_4/test_plugin/include/**",
+        "/home/administrator/ros_ws/src/learning_ros_noetic/Part_4/traj_builder/include/**",
+        "/home/administrator/ros_ws/src/learning_ros_noetic/Part_5/ur10_robot/ur_fk_ik/include/**",
+        "/home/administrator/ros_ws/src/learning_ros_noetic/Part_2/xform_utils/include/**",
+        "/usr/include/**"
+      ],
+      "name": "ROS"
+    }
+  ],
+  "version": 4
+}

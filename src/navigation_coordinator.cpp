@@ -118,20 +118,30 @@ int main(int argc, char **argv)
 
     TrajBuilder trajBuilder;
 
+    float x_i = current_pose.pose.position.x;
+    float y_i = current_pose.pose.position.y;
+
     ROS_INFO("STEP 1");
-    tryMove(10, 0, 1);
+    tryMove(x_i + 5, y_i, 1);
 
     ROS_INFO("STEP 2");
-    tryMove(current_pose.pose.position.x - 0.05, 10, 1);
+    tryMove(x_i + 5, y_i -1, 1);
 
     ROS_INFO("STEP 3");
-    tryMove(0.5, current_pose.pose.position.y - 0.05, 1);
+    tryMove(x_i, y_i -1, 1);
 
     ROS_INFO("STEP 4");
-    tryMove(0.5, 10, 1);
+    tryMove(x_i, y_i, 1);
 
-    ROS_INFO("STEP 5");
-    tryMove(-8, current_pose.pose.position.y - 0.05, 1);
+    // orientation fix: rotate after final translation.
+    ros::spinOnce();
+    float x_current = current_pose.pose.position.x;
+    float y_current = current_pose.pose.position.y;
+    ROS_INFO("STEP: Reorienting back to original pose");
+    tryMove(x_current + 0.01, y_current, 1);
+
+    // ROS_INFO("STEP 5");
+    // tryMove(-8, current_pose.pose.position.y - 0.05, 1);
 
     ros::spin();
 
