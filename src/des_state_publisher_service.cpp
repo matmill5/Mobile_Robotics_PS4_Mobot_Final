@@ -4,6 +4,7 @@
 #include <std_msgs/Float64.h>
 #include <std_msgs/Bool.h>
 #include <mobot_controller/ServiceMsg.h>
+#include <nav_msgs/Odometry.h>
 #include <string.h>
 
 using namespace std;
@@ -26,6 +27,16 @@ ros::Publisher des_twist_pub;
 ros::Publisher twist_pub;
 
 ros::Subscriber lidar_sub;
+ros::Subscriber current_state_sub;
+
+nav_msgs::Odometry current_state;
+
+void currStateCallback(const nav_msgs::Odometry &odom)
+{
+    current_state = odom;
+    current_state.pose.pose.orientation.z = -current_state.pose.pose.orientation.z;
+    current_state.pose.pose.position.y = -current_state.pose.pose.position.y;
+}
 
 bool desStateServiceCallBack(mobot_controller::ServiceMsgRequest &request,
                              mobot_controller::ServiceMsgResponse &response)
@@ -43,25 +54,31 @@ bool desStateServiceCallBack(mobot_controller::ServiceMsgRequest &request,
     g_start_pose = request.start_pos;
     g_end_pose = request.goal_pos;
 
-    double dt = 0.01;
+    double dt = 0.1;
     ros::Rate looprate(1 / dt);
     TrajBuilder trajBuilder;
     trajBuilder.set_dt(dt);
     trajBuilder.set_alpha_max(0.1);
-    trajBuilder.set_accel_max(0.03);
+    trajBuilder.set_accel_max(0.1);
     trajBuilder.set_omega_max(0.1*10);
-    trajBuilder.set_speed_max(0.03*20);
+    trajBuilder.set_speed_max(0.6);
 
     // calculate the desired state stream using traj_builder lib.
     nav_msgs::Odometry des_state;
 
     std::vector<nav_msgs::Odometry> vec_of_states;
 
+    ROS_WARN("RECEIVED START_X =  %f", g_start_pose.pose.position.x);
+    ROS_WARN("RECEIVED START_Y =  %f", g_start_pose.pose.position.y);
+    ROS_WARN("RECEIVED GOAL_X =  %f", g_end_pose.pose.position.x);
+    ROS_WARN("RECEIVED GOAL_Y =  %f", g_end_pose.pose.position.y);
+
     switch (s)
     {
 
     // GOING FORWARD
     case 1:
+        ROS_INFO("GOING FORWARD");
         trajBuilder.build_travel_traj(g_start_pose, g_end_pose, vec_of_states);
         for (auto state : vec_of_states)
         {
@@ -72,17 +89,15 @@ bool desStateServiceCallBack(mobot_controller::ServiceMsgRequest &request,
             ros::spinOnce();
             if (lidar_alarm)
             {
-                response.success = false;
                 ROS_INFO("cannot move, obstalce");
-                break;
+                return response.success = false;;        // try this
             }
-            else
-                response.success = true;
         }
-        break;
+        return response.success = true;
 
     // SPIN
     case 2:
+        ROS_INFO("GOING SPIN");
         trajBuilder.build_spin_traj(g_start_pose, g_end_pose, vec_of_states);
         for (auto state : vec_of_states)
         {
@@ -91,14 +106,13 @@ bool desStateServiceCallBack(mobot_controller::ServiceMsgRequest &request,
             des_state_pub.publish(des_state);
             looprate.sleep();
             ros::spinOnce();
-            response.success = true;
         }
-        break;
+        return response.success = true;
 
     // BRAKE - HALT!!!!!!!!
     case 3:
         ROS_INFO("BRAKEEEEEEEEE");
-        trajBuilder.build_braking_traj(g_start_pose, vec_of_states);
+        trajBuilder.build_braking_traj(g_start_pose, current_state.twist.twist, vec_of_states);
         for (auto state : vec_of_states)
         {
             des_state = state;
@@ -107,16 +121,14 @@ bool desStateServiceCallBack(mobot_controller::ServiceMsgRequest &request,
             looprate.sleep();
             ros::spinOnce();
         }
-        break;
+        return response.success = true;
 
     //* illegal input. for testing only
     case 4:
         ROS_ERROR("Please type valid mode number");
-        response.success = false;
-        break; // just in case. don't know if need this.
+        return response.success = false;
+        // just in case. don't know if need this.
     }
-
-    ROS_INFO("Is movement successful?: %d", success);
 
     return response.success;
 }
@@ -135,8 +147,10 @@ int main(int argc, char **argv)
 
     des_state_pub = n.advertise<nav_msgs::Odometry>("/desired_state", 1);
 
-    lidar_sub = n.subscribe("lidar_alarm", 1, lidarCallback);
+    lidar_sub = n.subscribe("/lidar_alarm", 1, lidarCallback);
+    current_state_sub = n.subscribe("/current_state", 1, currStateCallback);\
 
+    ROS_INFO("Ready to publish des_state / des_twist");
     ros::spin();
     return 0;
 }

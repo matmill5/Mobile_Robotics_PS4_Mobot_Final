@@ -445,28 +445,25 @@ void TrajBuilder::build_triangular_spin_traj(geometry_msgs::PoseStamped start_po
 //this function would be useful for planning a need for sudden braking
 //compute trajectory corresponding to applying max prudent decel to halt
 void TrajBuilder::build_braking_traj(geometry_msgs::PoseStamped start_pose,
+                                    geometry_msgs::Twist start_twist,
                                      std::vector<nav_msgs::Odometry> &vec_of_states)
 {
     double x_start = start_pose.pose.position.x;
     double y_start = start_pose.pose.position.y;
     double psi_des = convertPlanarQuat2Psi(start_pose.pose.orientation);
+    float start_speed = start_twist.linear.x;
     nav_msgs::Odometry des_state;
     des_state.header = start_pose.header;  //really, want to copy the frame_id
     des_state.pose.pose = start_pose.pose; //start from here
     des_state.twist.twist = halt_twist_;   // insist on starting from rest
-    double trip_len = 0.5;                 // modify this by checking the mobot
-    double t_ramp = sqrt(trip_len / accel_max_);
+    double t_ramp = fabs(start_speed)/accel_max_;
     int npts_ramp = round(t_ramp / dt_);
-    double v_peak = accel_max_ * t_ramp; // could consider special cases for reverse motion
-    double d_vel = alpha_max_ * dt_;     // incremental velocity changes for ramp-up
-
     double x_des = x_start; //start from here
     double y_des = y_start;
-    double speed_des = 0.0;
+    double speed_des = fabs(start_speed);
     des_state.twist.twist.angular.z = 0.0;                                  //omega_des; will not change
     des_state.pose.pose.orientation = convertPlanarPsi2Quaternion(psi_des); //constant
     // orientation of des_state will not change; only position and twist
-    double t = 0.0;
     //ramp down:
     for (int i = 0; i < npts_ramp; i++)
     {
