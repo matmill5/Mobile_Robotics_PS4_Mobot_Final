@@ -122,10 +122,10 @@ int main(int argc, char **argv)
     float y_i = current_pose.pose.position.y;
 
     ROS_INFO("STEP 1");
-    tryMove(x_i + 5, y_i, 1);
+    tryMove(x_i + 1, y_i, 1);
 
     ROS_INFO("STEP 2");
-    tryMove(x_i + 5, y_i -1, 1);
+    tryMove(x_i + 1, y_i -1, 1);
 
     ROS_INFO("STEP 3");
     tryMove(x_i, y_i -1, 1);
