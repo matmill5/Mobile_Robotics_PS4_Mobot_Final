@@ -14,20 +14,6 @@ nav_msgs::Odometry current_state;
 geometry_msgs::PoseStamped current_pose;
 
 ros::ServiceClient client;
-//example ROS client:
-// first run: rosrun stdr_wall_following_controller stdr_wall_following_controller
-// then start this node:  rosrun stdr_wall_following_controller heading_ros_client
-
-//given a heading for motion on a plane (as above), convert this to a quaternion
-geometry_msgs::Quaternion convertPlanarPsi2Quaternion(double psi)
-{
-    geometry_msgs::Quaternion quaternion;
-    quaternion.x = 0.0;
-    quaternion.y = 0.0;
-    quaternion.z = sin(psi / 2.0);
-    quaternion.w = cos(psi / 2.0);
-    return (quaternion);
-}
 
 void currStateCallback(const nav_msgs::Odometry &odom)
 {
@@ -37,8 +23,9 @@ void currStateCallback(const nav_msgs::Odometry &odom)
     current_pose.pose = current_state.pose.pose;
 }
 
-void move2coord(float goal_pose_x, float goal_pose_y)
+bool move2coord(float goal_pose_x, float goal_pose_y)
 {
+    bool success = true;
     TrajBuilder trajBuilder;
     mobot_controller::ServiceMsg srv;
     geometry_msgs::PoseStamped start_pose;
@@ -46,6 +33,9 @@ void move2coord(float goal_pose_x, float goal_pose_y)
     geometry_msgs::PoseStamped goal_pose_rot;
     string mode;
     start_pose.pose = current_state.pose.pose;
+
+    bool success_rotate;
+    bool success_translate;
 
     // For now: rotate to head forward to goal point, then move toward the place.
     double x_start = start_pose.pose.position.x;
@@ -57,18 +47,23 @@ void move2coord(float goal_pose_x, float goal_pose_y)
 
     double des_psi = atan2(dy, dx);
 
+    ROS_INFO("Start_x = = %f", x_start);
+    ROS_INFO("Start_y = = %f", y_start);
+    ROS_INFO("Goal_x = %f", x_end);
+    ROS_INFO("Goal_y = %f", y_end);
     // rotate
-    while (fabs(trajBuilder.convertPlanarQuat2Psi(current_state.pose.pose.orientation) - des_psi) >= M_PI / 18)
+    goal_pose_rot = trajBuilder.xyPsi2PoseStamped(current_pose.pose.position.x,
+                                                  current_pose.pose.position.y,
+                                                  des_psi); // keep the same x,y, only rotate to des_psi
+    srv.request.start_pos = current_pose;
+    srv.request.goal_pos = goal_pose_rot;
+    srv.request.mode = "2"; // spin so that head toward the goal.
+    if (client.call(srv))
     {
-        goal_pose_rot = trajBuilder.xyPsi2PoseStamped(current_pose.pose.position.x,
-                                                      current_pose.pose.position.y,
-                                                      des_psi); // keep the same x,y, only rotate to des_psi
-        srv.request.start_pos = current_pose;
-        srv.request.goal_pos = goal_pose_rot;
-        srv.request.mode = "2"; // spin so that head toward the goal.
-        client.call(srv);
-        ros::spinOnce();
+        success_rotate = srv.response.success;
+        ROS_INFO("rotate success? %d", success_rotate);
     }
+    ros::spinOnce();
 
     // forward
     goal_pose_trans = trajBuilder.xyPsi2PoseStamped(goal_pose_x,
@@ -77,17 +72,36 @@ void move2coord(float goal_pose_x, float goal_pose_y)
     srv.request.start_pos = goal_pose_rot;
     srv.request.goal_pos = goal_pose_trans;
     srv.request.mode = "1"; // spin so that head toward the goal.
-    client.call(srv);
+    if (client.call(srv))
+    {
+        success_translate = srv.response.success;
+        ROS_INFO("translate success? %d", success_translate);
+    }
     ros::spinOnce();
 
     // if fail to forward
-    if (!srv.response.success)
+    if (!success_translate)
     {
+        ROS_INFO("Cannot move, obstacle. braking");
         srv.request.start_pos = current_pose;
         srv.request.goal_pos = current_pose; //anything is fine.
         srv.request.mode = "3";              // spin so that head toward the goal.
         client.call(srv);
-        ROS_INFO("cannot move, obstacle. braking");
+        success = false;
+    }
+    ros::spinOnce();
+
+    return success;
+}
+
+void tryMove(float goal_pose_x, float goal_pose_y, int retry_max)
+{
+    int retry_ctr = 0;
+    bool success = move2coord(goal_pose_x, goal_pose_y);
+    while (!success && retry_ctr < retry_max) {
+        ROS_WARN("RETRY %d", retry_ctr);
+        retry_ctr++;
+        success = move2coord(goal_pose_x,goal_pose_y);
     }
 }
 
@@ -104,21 +118,31 @@ int main(int argc, char **argv)
 
     TrajBuilder trajBuilder;
 
+    float x_i = current_pose.pose.position.x;
+    float y_i = current_pose.pose.position.y;
+
     ROS_INFO("STEP 1");
-    move2coord(10,0);
+    tryMove(x_i + 1, y_i, 1);
 
     ROS_INFO("STEP 2");
-    move2coord(current_pose.pose.position.x - 0.05, 10);
+    tryMove(x_i + 1, y_i -1, 1);
 
     ROS_INFO("STEP 3");
-    move2coord(0, current_pose.pose.position.y - 0.05);
+    tryMove(x_i, y_i -1, 1);
 
     ROS_INFO("STEP 4");
-    move2coord(0, 7.5);
+    tryMove(x_i, y_i, 1);
 
-    ROS_INFO("STEP 5");
-    move2coord(-8, 7.5);
-    
+    // orientation fix: rotate after final translation.
+    ros::spinOnce();
+    float x_current = current_pose.pose.position.x;
+    float y_current = current_pose.pose.position.y;
+    ROS_INFO("STEP: Reorienting back to original pose");
+    tryMove(x_current + 0.01, y_current, 1);
+
+    // ROS_INFO("STEP 5");
+    // tryMove(-8, current_pose.pose.position.y - 0.05, 1);
+
     ros::spin();
 
     return 0;

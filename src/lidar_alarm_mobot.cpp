@@ -20,7 +20,7 @@ int centerIndex = -1; //! NOT real. Update within callback
 // left_wheel_y = 0.282573
 // right_wheel_y = -0.282873
 const float width = 0.8;            // half the width of the rectangular box
-const float dist_detect = 1;     // distance to closer edge (there should be a min value for this)
+const float dist_detect = 2.5;     // distance to closer edge (there should be a min value for this)
 
 std::vector<float> range_limit;
 

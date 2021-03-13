@@ -23,7 +23,7 @@ void desStateCallback(const nav_msgs::Odometry &des_state_recv)
 {
     des_state = des_state_recv;
     des_twist = des_state.twist.twist;
-    des_twist.angular.z = -des_twist.angular.z; // bug in ang_vel
+    des_twist.angular.z = - des_twist.angular.z; // bug in ang_vel
     //! add logic here to distinguise either spin-in-place, straight-line-motion, or halt
     //! after logic, lane-drift control!!!!
     twist_pub.publish(des_twist);
