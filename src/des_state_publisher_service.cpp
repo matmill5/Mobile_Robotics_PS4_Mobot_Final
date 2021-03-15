@@ -22,6 +22,10 @@ int s = -1; // this is unreal. state start with 1 for forward.
 //ros::Publisher des_state_pub;
 //ros::ServiceServer des_state_service;
 
+const int FORWARD = 1;
+const int SPIN = 2;
+const int HALT = 3;
+
 ros::Publisher des_state_pub;
 ros::Publisher des_twist_pub;
 ros::Publisher twist_pub;
@@ -65,6 +69,7 @@ bool desStateServiceCallBack(mobot_controller::ServiceMsgRequest &request,
 
     // calculate the desired state stream using traj_builder lib.
     nav_msgs::Odometry des_state;
+    des_state.pose.covariance[0] = 0;
 
     std::vector<nav_msgs::Odometry> vec_of_states;
 
@@ -83,6 +88,7 @@ bool desStateServiceCallBack(mobot_controller::ServiceMsgRequest &request,
         for (auto state : vec_of_states)
         {
             des_state = state;
+            des_state.pose.covariance[0] = FORWARD;
             des_state.header.stamp = ros::Time::now();
             des_state_pub.publish(des_state);
             looprate.sleep();
@@ -102,6 +108,7 @@ bool desStateServiceCallBack(mobot_controller::ServiceMsgRequest &request,
         for (auto state : vec_of_states)
         {
             des_state = state;
+            des_state.pose.covariance[0] = SPIN;
             des_state.header.stamp = ros::Time::now();
             des_state_pub.publish(des_state);
             looprate.sleep();
@@ -116,6 +123,7 @@ bool desStateServiceCallBack(mobot_controller::ServiceMsgRequest &request,
         for (auto state : vec_of_states)
         {
             des_state = state;
+            des_state.pose.covariance[0] = HALT;
             des_state.header.stamp = ros::Time::now();
             des_state_pub.publish(des_state);
             looprate.sleep();
